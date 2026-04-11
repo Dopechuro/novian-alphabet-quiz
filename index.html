@@ -3,11 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Nova Modern Quiz</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    
-<h1>Hello World!</h1>
 
+    <div id="main-menu" class="container">
+        <button id="btn-help" class="help-btn" title="How to Learn">
+            <img src="assets/icons/icon-help.png" alt="Help" style="width: 32px; height: 32px; object-fit: contain;">
+        </button>
+
+        <img src="assets/icons/icon-menu.png" alt="Nova Modern Quiz" class="menu-logo">
+        
+        <div class="settings-group">
+            <h3>SRS Size</h3>
+            <select id="srs-level" class="styled-select">
+                <option value="0">Disabled</option>
+                <option value="1">Shortest</option>
+                <option value="2">Shorter</option>
+                <option value="3">Normal</option>
+                <option value="4">Longer</option>
+                <option value="5">Longest</option>
+            </select>
+        </div>
+
+        <div class="settings-group">
+            <h3>Quiz Mode</h3>
+            <label class="radio-label">
+                <input type="radio" name="interaction" value="write" checked> 
+                <img src="assets/icons/icon-write.png" class="custom-icon" alt=""> Write
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="interaction" value="select"> 
+                <img src="assets/icons/icon-select.png" class="custom-icon" alt=""> Select
+            </label>
+        </div>
+
+        <div id="quiz-type-menu" class="settings-group"></div>
+
+        <div class="settings-group">
+            <h3>Font Options</h3>
+            <label class="radio-label">
+                <input type="radio" name="font-option" value="print" checked> 
+                <img src="assets/icons/icon-print.png" class="custom-icon" alt=""> Print
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="font-option" value="cursive"> 
+                <img src="assets/icons/icon-cursive.png" class="custom-icon" alt=""> Cursive
+            </label>
+        </div>
+
+        <div class="settings-group">
+            <h3>Learn/Read</h3>
+            <label class="radio-label">
+                <input type="radio" name="charset" value="lowercase" checked> 
+                <img src="assets/icons/icon-lower.png" class="custom-icon" alt=""> Lowercase (a-z)
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="charset" value="uppercase"> 
+                <img src="assets/icons/icon-upper.png" class="custom-icon" alt=""> Uppercase (A-Z)
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="charset" value="numbers"> 
+                <img src="assets/icons/icon-numbers.png" class="custom-icon" alt=""> Numbers (0-9)
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="charset" value="combined"> 
+                <img src="assets/icons/icon-everything.png" class="custom-icon" alt=""> Everything
+            </label>
+            <label class="radio-label hidden" id="learn-upper-lower">
+                <input type="radio" name="charset" value="upper-lower"> 
+                <img src="assets/icons/icon-upper-lower.png" class="custom-icon" alt=""> Uppercase to Lowercase
+            </label>
+        </div>
+
+        <div class="menu-buttons-wrapper">
+            <button id="btn-reading-practice" class="action-btn btn-reading">Reading Practice</button>
+            <button id="btn-start-game" class="action-btn btn-start">Start Quiz</button>
+        </div>
+    </div>
+
+    <div id="game-screen" class="container hidden">
+        <button id="btn-focus" class="focus-toggle-btn" title="Toggle Focus Mode">
+            <img id="focus-icon-img" src="assets/icons/icon-eye-open.png" class="custom-icon" style="margin:0;" alt="">
+        </button>
+
+        <div id="last-result" class="last-result-banner"></div>
+        <div id="display-char" class="target-character">?</div>
+        
+        <div id="write-ui">
+            <input type="text" id="user-guess" autocomplete="off">
+            <br>
+            <button id="btn-submit" class="action-btn btn-submit-game">Submit</button>
+        </div>
+
+        <div id="select-ui" class="hidden">
+            <button class="option-btn" data-index="0" id="opt-0"></button>
+            <button class="option-btn" data-index="1" id="opt-1"></button>
+            <button class="option-btn" data-index="2" id="opt-2"></button>
+        </div>
+
+        <div id="feedback-text" class="feedback"></div>
+        
+        <div class="stats-board">
+            <span>Remaining: <span id="remaining-count">0</span></span>
+            <span>Score: <span id="score">0</span>/<span id="attempts">0</span></span>
+            <span>⏱️ <span id="timer-display">00:00</span></span>
+        </div>
+
+        <div class="game-controls">
+            <button class="control-btn btn-menu">Menu</button>
+            <button class="control-btn btn-restart" id="btn-restart">Restart</button>
+        </div>
+    </div>
+
+    <div id="reading-screen" class="container hidden">
+        <div id="reading-error" class="hidden" style="color: #f87171; font-size: 20px; margin-bottom: 20px;">
+            ⚠️ No stories found. Please add data to the rawStoryData object.
+        </div>
+
+        <div id="reading-content-wrapper">
+            <img id="reading-image" src="" alt="Story Event Image" onerror="this.style.display='none'">
+            <h2 id="reading-title" class="reading-alien-text">Loading...</h2>
+            <div id="reading-text" class="reading-alien-text"></div>
+        </div>
+
+        <div class="reading-controls">
+            <button class="control-btn btn-menu">Menu</button>
+            <div class="nav-wrapper">
+                <button class="control-btn" id="btn-prev">Prev</button>
+                <button class="control-btn" id="btn-random">Random</button>
+                <button class="control-btn" id="btn-next">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="help-modal">
+        <div class="help-content">
+            <h2>Become a Novian</h2>
+            <h4>Objective</h4>
+            <p>Master the Novian alphabet playing a quiz game! Memorize and translate characters.</p>
+            
+            <h4>How to Learn</h4>
+            <p>Don't worry about making mistakes. Start making guesses, even if you don't know the characters. Keep trying until you get the right answer.</p>
+            
+            <h4>SRS Size</h4>
+            <p>Adjusts the learning curve. "Disabled" gives you a standard randomized quiz. Higher levels repeats characters you get wrong more to reinforce your memory. If you're a beginner, we suggest you try the longer levels and adjust while progressing.</p>
+            
+            <h4>Quiz Mode & Quiz Type</h4>
+            <p><strong>Write:</strong> Use your keyboard to type the matching character.<br>
+            <strong>Standard vs Combined:</strong> Write the correct answer for one or three combined characters.</p>
+            <p><strong>Select:</strong> Choose the correct answer from three multiple-choice options.<br>
+            <strong>Standard vs Reversed:</strong> Translate Novian, or to Novian.</p>
+            
+            <h4>Font Options</h4>
+            <p>Choose the visual style of the Nova characters you want to study: Print or Cursive.</p>
+
+            <h4>Learn/Read</h4>
+            <p>Select which set of characters to learn or read.</p>
+            
+            <h4>Reading Practice</h4>
+            <p>Test your fluency by reading full translated story snippets from the game.</p>
+
+            <button id="btn-close-help" class="close-help-btn">
+                <img src="assets/icons/icon-help2.png" alt="Got it!" style="width: 160px; height: 160px; object-fit: contain;">
+            </button>
+        </div>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>

@@ -1,0 +1,590 @@
+import { numbersList, uppercaseList, lowercaseList, backgroundImages, rawStoryData } from './data.js';
+
+const state = {
+    storyData: [],
+    currentStoryIndex: 0,
+    interactionMode: '',
+    quizType: 'standard',
+    writeQuizType: 'standard',
+    selectQuizType: 'standard',
+    currentPool: [],
+    activeSetMode: '',
+    srsLists: {},
+    minList: 0,
+    maxList: 1,
+    currentListIdx: 0,
+    currentTargets: [],
+    score: 0,
+    attempts: 0,
+    isFocusMode: false,
+    timerInterval: null,
+    secondsElapsed: 0,
+    isLogoFloating: false,
+    currentLogosCount: 0,
+    maxLogos: 5,
+    logoSpawnInterval: null
+};
+
+const dom = {
+    mainMenu: document.getElementById('main-menu'),
+    quizTypeMenu: document.getElementById('quiz-type-menu'),
+    srsSelect: document.getElementById('srs-level'),
+    gameScreen: document.getElementById('game-screen'),
+    readingScreen: document.getElementById('reading-screen'),
+    displayElement: document.getElementById('display-char'),
+    writeUI: document.getElementById('write-ui'),
+    selectUI: document.getElementById('select-ui'),
+    inputElement: document.getElementById('user-guess'),
+    feedbackElement: document.getElementById('feedback-text'),
+    lastResultElement: document.getElementById('last-result'),
+    scoreElement: document.getElementById('score'),
+    attemptsElement: document.getElementById('attempts'),
+    remainingElement: document.getElementById('remaining-count'),
+    timerElement: document.getElementById('timer-display'),
+    focusIconImg: document.getElementById('focus-icon-img'),
+    optionBtns: document.querySelectorAll('.option-btn'),
+    upperLowerLabel: document.getElementById('learn-upper-lower'),
+    helpModal: document.getElementById('help-modal'),
+    btnReading: document.getElementById('btn-reading-practice'),
+    readingImage: document.getElementById('reading-image'),
+    readingTitle: document.getElementById('reading-title'),
+    readingText: document.getElementById('reading-text'),
+    readingError: document.getElementById('reading-error'),
+    readingContentWrapper: document.getElementById('reading-content-wrapper')
+};
+
+function init() {
+    processStoryData();
+    bindEvents();
+    updateQuizTypeMenu();
+    updateReadingButton();
+    startFloatingLogo();
+}
+
+function processStoryData() {
+    const tempMap = {};
+    for (const key in rawStoryData) {
+        const parts = key.split('.');
+        if (parts.length >= 3) {
+            const storyId = parts[1];
+            const type = parts[2];
+            if (!tempMap[storyId]) tempMap[storyId] = { id: storyId };
+            if (type === '5') tempMap[storyId].title = rawStoryData[key];
+            if (type === '7') tempMap[storyId].text = rawStoryData[key];
+        }
+    }
+    state.storyData = Object.values(tempMap).filter(s => s.title && s.text);
+}
+
+function bindEvents() {
+    document.getElementById('btn-help').addEventListener('click', showHelp);
+    document.getElementById('btn-close-help').addEventListener('click', hideHelp);
+    dom.helpModal.addEventListener('click', e => { if (e.target === dom.helpModal) hideHelp(); });
+
+    document.querySelectorAll('input[name="interaction"]').forEach(el => el.addEventListener('change', updateQuizTypeMenu));
+    document.querySelectorAll('input[name="charset"]').forEach(el => el.addEventListener('change', updateReadingButton));
+    
+    dom.quizTypeMenu.addEventListener('change', e => {
+        if (e.target.name === 'quiztype') {
+            const interaction = document.querySelector('input[name="interaction"]:checked').value;
+            if (interaction === 'write') state.writeQuizType = e.target.value;
+            else state.selectQuizType = e.target.value;
+        }
+    });
+
+    dom.btnReading.addEventListener('click', startReadingMode);
+    document.getElementById('btn-start-game').addEventListener('click', startGame);
+    document.getElementById('btn-restart').addEventListener('click', startGame);
+    document.querySelectorAll('.btn-menu').forEach(btn => btn.addEventListener('click', showMenu));
+
+    document.getElementById('btn-focus').addEventListener('click', toggleFocus);
+    document.getElementById('btn-submit').addEventListener('click', handleWriteAction);
+    
+    dom.optionBtns.forEach(btn => btn.addEventListener('click', e => handleSelectAction(e.target.dataset.index)));
+
+    document.getElementById('btn-prev').addEventListener('click', prevStory);
+    document.getElementById('btn-next').addEventListener('click', nextStory);
+    document.getElementById('btn-random').addEventListener('click', randomStory);
+
+    document.addEventListener("keydown", handleGlobalKeys);
+}
+
+function updateReadingButton() {
+    const setMode = document.querySelector('input[name="charset"]:checked').value;
+    dom.btnReading.disabled = ['numbers', 'upper-lower'].includes(setMode);
+}
+
+function startReadingMode() {
+    stopFloatingLogo();
+    applyFontSelection();
+    toggleScreens(dom.readingScreen);
+
+    if (state.storyData.length === 0) {
+        dom.readingError.classList.remove('hidden');
+        dom.readingContentWrapper.classList.add('hidden');
+    } else {
+        dom.readingError.classList.add('hidden');
+        dom.readingContentWrapper.classList.remove('hidden');
+        randomStory();
+    }
+}
+
+function displayCurrentStory() {
+    if (state.storyData.length === 0) return;
+    const story = state.storyData[state.currentStoryIndex];
+    const setMode = document.querySelector('input[name="charset"]:checked').value;
+    
+    dom.readingImage.style.display = "block";
+    dom.readingImage.src = `assets/story/datingeventcg/DatingSPCG_${story.id}.webp`;
+    
+    let displayTitle = story.title;
+    let displayText = story.text;
+
+    if (setMode === 'uppercase') {
+        displayTitle = displayTitle.toUpperCase();
+        displayText = displayText.toUpperCase();
+    } else if (setMode === 'lowercase') {
+        displayTitle = displayTitle.toLowerCase();
+        displayText = displayText.toLowerCase();
+    }
+
+    dom.readingTitle.textContent = displayTitle;
+    dom.readingText.textContent = displayText;
+    dom.readingScreen.scrollTop = 0;
+}
+
+function nextStory() {
+    if (state.storyData.length === 0) return;
+    state.currentStoryIndex = (state.currentStoryIndex + 1) % state.storyData.length;
+    displayCurrentStory();
+}
+
+function prevStory() {
+    if (state.storyData.length === 0) return;
+    state.currentStoryIndex = (state.currentStoryIndex - 1 + state.storyData.length) % state.storyData.length;
+    displayCurrentStory();
+}
+
+function randomStory() {
+    if (state.storyData.length === 0) return;
+    state.currentStoryIndex = Math.floor(Math.random() * state.storyData.length);
+    displayCurrentStory();
+}
+
+function showHelp() {
+    dom.helpModal.style.display = 'flex';
+    setTimeout(() => { dom.helpModal.style.opacity = '1'; }, 10);
+}
+
+function hideHelp() {
+    dom.helpModal.style.opacity = '0';
+    setTimeout(() => { dom.helpModal.style.display = 'none'; }, 300);
+}
+
+function spawnFloatingLogo() {
+    if (!state.isLogoFloating || state.currentLogosCount >= state.maxLogos) return;
+
+    state.currentLogosCount++;
+    const img = document.createElement('img');
+    img.src = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
+    img.className = 'floating-logo';
+    document.body.appendChild(img);
+
+    img.onload = () => {
+        const maxX = Math.max(0, window.innerWidth - img.clientWidth);
+        const maxY = Math.max(0, window.innerHeight - img.clientHeight);
+        img.style.left = Math.floor(Math.random() * maxX) + 'px';
+        img.style.top = Math.floor(Math.random() * maxY) + 'px';
+        
+        const driftX = (Math.random() - 0.5) * 300;
+        const driftY = (Math.random() - 0.5) * 300;
+
+        setTimeout(() => {
+            if (!state.isLogoFloating) return;
+            img.style.opacity = '0.3'; 
+            img.style.transform = `translate(${driftX}px, ${driftY}px)`;
+        }, 100);
+
+        setTimeout(() => {
+            img.style.opacity = '0'; 
+            setTimeout(() => {
+                if (img.parentNode) {
+                    img.parentNode.removeChild(img);
+                    state.currentLogosCount--;
+                }
+            }, 2000); 
+        }, 5000 + Math.random() * 3000); 
+    };
+    
+    img.onerror = () => {
+        img.parentNode?.removeChild(img);
+        state.currentLogosCount--;
+    };
+}
+
+function startFloatingLogo() {
+    if (state.isLogoFloating) return; 
+    state.isLogoFloating = true;
+    spawnFloatingLogo();
+    state.logoSpawnInterval = setInterval(spawnFloatingLogo, 2500);
+}
+
+function stopFloatingLogo() {
+    state.isLogoFloating = false;
+    clearInterval(state.logoSpawnInterval);
+    document.querySelectorAll('.floating-logo').forEach(logo => {
+        logo.style.opacity = '0';
+        setTimeout(() => {
+            if (logo.parentNode) {
+                logo.parentNode.removeChild(logo);
+                state.currentLogosCount--;
+            }
+        }, 2000);
+    });
+}
+
+function updateQuizTypeMenu() {
+    const interaction = document.querySelector('input[name="interaction"]:checked').value;
+    
+    if (interaction === 'write') {
+        const isCombined = state.writeQuizType === 'combined';
+        dom.quizTypeMenu.innerHTML = `
+            <h3>Quiz Type</h3>
+            <label class="radio-label">
+                <input type="radio" name="quiztype" value="standard" ${!isCombined ? 'checked' : ''}> 
+                <img src="assets/icons/icon-standard.png" class="custom-icon" alt=""> Standard
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="quiztype" value="combined" ${isCombined ? 'checked' : ''}> 
+                <img src="assets/icons/icon-combined.png" class="custom-icon" alt=""> Combined
+            </label>
+        `;
+        dom.upperLowerLabel.classList.add('hidden');
+        if (document.querySelector('input[name="charset"]:checked').value === 'upper-lower') {
+            document.querySelector('input[value="uppercase"]').checked = true;
+        }
+    } else {
+        const isReversed = state.selectQuizType === 'reversed';
+        dom.quizTypeMenu.innerHTML = `
+            <h3>Quiz Type</h3>
+            <label class="radio-label">
+                <input type="radio" name="quiztype" value="standard" ${!isReversed ? 'checked' : ''}> 
+                <img src="assets/icons/icon-standard.png" class="custom-icon" alt=""> Standard
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="quiztype" value="reversed" ${isReversed ? 'checked' : ''}> 
+                <img src="assets/icons/icon-reversed.png" class="custom-icon" alt=""> Reversed
+            </label>
+        `;
+        dom.upperLowerLabel.classList.remove('hidden');
+    }
+    updateReadingButton();
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function getDistractors(correctAnswer, pool, count) {
+    let distractors = [];
+    while (distractors.length < count) {
+        let randomChar = pool[Math.floor(Math.random() * pool.length)];
+        if (randomChar !== correctAnswer && !distractors.includes(randomChar)) {
+            distractors.push(randomChar);
+        }
+    }
+    return distractors;
+}
+
+function formatTime(totalSeconds) {
+    return `${Math.floor(totalSeconds / 60).toString().padStart(2, '0')}:${(totalSeconds % 60).toString().padStart(2, '0')}`;
+}
+
+function startTimer() {
+    clearInterval(state.timerInterval);
+    state.secondsElapsed = 0;
+    dom.timerElement.textContent = "00:00";
+    state.timerInterval = setInterval(() => {
+        state.secondsElapsed++;
+        dom.timerElement.textContent = formatTime(state.secondsElapsed);
+    }, 1000);
+}
+
+function toggleFocus() {
+    state.isFocusMode = !state.isFocusMode;
+    applyFocusState();
+    if (state.interactionMode === 'write' && !dom.gameScreen.classList.contains('hidden')) {
+        dom.inputElement.focus();
+    }
+}
+
+function applyFocusState() {
+    if (state.isFocusMode) {
+        dom.gameScreen.classList.add('focus-active');
+        dom.focusIconImg.src = "assets/icons/icon-eye-closed.png";
+    } else {
+        dom.gameScreen.classList.remove('focus-active');
+        dom.focusIconImg.src = "assets/icons/icon-eye-open.png";
+    }
+}
+
+function toggleScreens(activeScreen) {
+    [dom.mainMenu, dom.gameScreen, dom.readingScreen].forEach(s => s.classList.add('hidden'));
+    activeScreen.classList.remove('hidden');
+}
+
+function showMenu() {
+    clearInterval(state.timerInterval);
+    toggleScreens(dom.mainMenu);
+    dom.lastResultElement.innerHTML = "";
+    startFloatingLogo();
+}
+
+function applyFontSelection() {
+    const fontChoice = document.querySelector('input[name="font-option"]:checked').value;
+    const activeFont = fontChoice === 'print' ? "'CustomPrint', sans-serif" : "'CustomCursive', sans-serif";
+    document.documentElement.style.setProperty('--alien-font', activeFont);
+}
+
+function startGame() {
+    stopFloatingLogo();
+    state.interactionMode = document.querySelector('input[name="interaction"]:checked').value;
+    state.activeSetMode = document.querySelector('input[name="charset"]:checked').value;
+    state.quizType = document.querySelector('input[name="quiztype"]:checked').value;
+    
+    applyFontSelection();
+    
+    const srsLevel = parseInt(dom.srsSelect.value);
+    state.minList = srsLevel === 0 ? 0 : -srsLevel;
+    state.maxList = srsLevel === 0 ? 1 : srsLevel;
+
+    toggleScreens(dom.gameScreen);
+    
+    if (state.activeSetMode === 'numbers') state.currentPool = [...numbersList];
+    else if (['uppercase', 'upper-lower'].includes(state.activeSetMode)) state.currentPool = [...uppercaseList];
+    else if (state.activeSetMode === 'lowercase') state.currentPool = [...lowercaseList];
+    else if (state.activeSetMode === 'combined') state.currentPool = [...numbersList, ...uppercaseList, ...lowercaseList];
+
+    state.srsLists = {};
+    for (let i = state.minList; i <= state.maxList; i++) state.srsLists[i] = [];
+
+    let startQueue = [...state.currentPool];
+    shuffleArray(startQueue);
+    state.srsLists[0] = startQueue;
+    state.currentListIdx = 0;
+
+    state.score = state.attempts = 0;
+    dom.scoreElement.textContent = state.score;
+    dom.attemptsElement.textContent = state.attempts;
+    
+    if (state.interactionMode === 'write') {
+        dom.writeUI.classList.remove('hidden');
+        dom.selectUI.classList.add('hidden');
+        dom.displayElement.style.fontFamily = "var(--alien-font)";
+    } else {
+        dom.writeUI.classList.add('hidden');
+        dom.selectUI.classList.remove('hidden');
+        
+        if (state.activeSetMode === 'upper-lower') {
+            dom.displayElement.style.fontFamily = "var(--alien-font)";
+            dom.optionBtns.forEach(btn => btn.style.fontFamily = "var(--alien-font)");
+        } else if (state.quizType === 'reversed') {
+            dom.displayElement.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+            dom.optionBtns.forEach(btn => btn.style.fontFamily = "var(--alien-font)");
+        } else {
+            dom.displayElement.style.fontFamily = "var(--alien-font)";
+            dom.optionBtns.forEach(btn => btn.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif");
+        }
+    }
+
+    dom.feedbackElement.textContent = "";
+    dom.lastResultElement.innerHTML = "";
+    document.getElementById('btn-focus').style.display = "block";
+    applyFocusState();
+    startTimer();
+    nextRound();
+}
+
+function nextRound() {
+    if (state.interactionMode === 'write') {
+        dom.inputElement.value = '';
+        dom.inputElement.focus();
+    }
+
+    let remainingTotal = state.currentPool.length - state.srsLists[state.maxList].length;
+    dom.remainingElement.textContent = remainingTotal;
+
+    if (remainingTotal === 0) return gameWon();
+
+    if (state.currentListIdx === null || state.srsLists[state.currentListIdx].length === 0) {
+        state.currentListIdx = null;
+        for (let i = state.minList; i < state.maxList; i++) {
+            if (state.srsLists[i].length > 0) {
+                state.currentListIdx = i;
+                break;
+            }
+        }
+    }
+
+    let queue = state.srsLists[state.currentListIdx];
+
+    if (state.interactionMode === 'write' && state.quizType === 'combined') {
+        const count = Math.min(3, queue.length);
+        state.currentTargets = queue.slice(0, count);
+        dom.displayElement.textContent = state.currentTargets.join('');
+        dom.inputElement.maxLength = count;
+    } else {
+        state.currentTargets = [queue[0]];
+        let displayChar = state.currentTargets[0];
+        
+        if (state.interactionMode === 'select' && state.activeSetMode === 'upper-lower' && state.quizType === 'reversed') {
+            displayChar = displayChar.toLowerCase();
+        }
+        
+        dom.displayElement.textContent = displayChar;
+        if (state.interactionMode === 'write') dom.inputElement.maxLength = 1;
+    }
+
+    if (state.interactionMode === 'select') {
+        let options = getDistractors(state.currentTargets[0], state.currentPool, 2);
+        options.push(state.currentTargets[0]);
+        shuffleArray(options);
+        
+        if (state.activeSetMode === 'upper-lower' && state.quizType === 'standard') {
+            options = options.map(c => c.toLowerCase());
+        }
+
+        dom.optionBtns.forEach((btn, i) => btn.textContent = options[i]);
+    }
+}
+
+function handleWriteAction() {
+    const guess = dom.inputElement.value;
+    const expectedStr = state.currentTargets.join('');
+    
+    if (guess === '') return;
+
+    state.attempts++;
+    state.srsLists[state.currentListIdx].splice(0, state.currentTargets.length);
+
+    if (guess === expectedStr) {
+        state.score++;
+        dom.lastResultElement.innerHTML = "";
+        dom.lastResultElement.style.color = "";
+        
+        let nextList = Math.min(state.maxList, state.currentListIdx + 1);
+        state.currentTargets.forEach(char => state.srsLists[nextList].push(char));
+    } else {
+        if (state.quizType === 'combined' && state.currentTargets.length > 1) {
+            const guessChars = guess.split('');
+            let feedbackHtml = '';
+            state.currentTargets.forEach((char, i) => {
+                const ok = guessChars[i] === char;
+                feedbackHtml += `<span class="alien-inline" style="color:${ok ? 'var(--success)' : 'var(--error)'}">${char}</span>`;
+            });
+            dom.lastResultElement.innerHTML = `${feedbackHtml} = <b>${expectedStr}</b>`;
+        } else {
+            dom.lastResultElement.innerHTML = `<span class="alien-inline">${expectedStr}</span> = <b>${expectedStr}</b>`;
+            dom.lastResultElement.style.color = "var(--error)";
+        }
+        
+        let guessChars = guess.split('');
+        state.currentTargets.forEach((char, index) => {
+            if (guessChars[index] === char) {
+                state.srsLists[Math.min(state.maxList, state.currentListIdx + 1)].push(char);
+            } else {
+                state.srsLists[Math.max(state.minList, state.currentListIdx - 1)].push(char);
+            }
+        });
+    }
+
+    dom.scoreElement.textContent = state.score;
+    dom.attemptsElement.textContent = state.attempts;
+    nextRound();
+}
+
+function handleSelectAction(btnIndex) {
+    const guess = document.getElementById(`opt-${btnIndex}`).textContent;
+    const expectedChar = state.currentTargets[0];
+    state.attempts++;
+
+    state.srsLists[state.currentListIdx].shift();
+    const isUpperLower = state.activeSetMode === 'upper-lower';
+    
+    let expectedOptionText = expectedChar;
+    let expectedDisplayText = expectedChar;
+    
+    if (isUpperLower) {
+        if (state.quizType === 'standard') expectedOptionText = expectedChar.toLowerCase();
+        else if (state.quizType === 'reversed') expectedDisplayText = expectedChar.toLowerCase();
+    }
+
+    if (guess.toLowerCase() === expectedChar.toLowerCase()) {
+        state.score++;
+        dom.lastResultElement.innerHTML = "";
+        dom.lastResultElement.style.color = "";
+        state.srsLists[Math.min(state.maxList, state.currentListIdx + 1)].push(expectedChar);
+    } else {
+        if (isUpperLower) {
+             dom.lastResultElement.innerHTML = `<span class="alien-inline">${expectedDisplayText}</span> = <span class="alien-inline">${expectedOptionText}</span>`;
+        } else if (state.quizType === 'reversed') {
+            dom.lastResultElement.innerHTML = `<b>${expectedDisplayText}</b> = <span class="alien-inline">${expectedOptionText}</span>`;
+        } else {
+            dom.lastResultElement.innerHTML = `<span class="alien-inline">${expectedDisplayText}</span> = <b>${expectedOptionText}</b>`;
+        }
+        
+        dom.lastResultElement.style.color = "var(--error)";
+        state.srsLists[Math.max(state.minList, state.currentListIdx - 1)].push(expectedChar);
+    }
+
+    dom.scoreElement.textContent = state.score;
+    dom.attemptsElement.textContent = state.attempts;
+    nextRound();
+}
+
+function gameWon() {
+    clearInterval(state.timerInterval);
+    dom.gameScreen.classList.remove('focus-active');
+    document.getElementById('btn-focus').style.display = "none"; 
+    dom.lastResultElement.innerHTML = "";
+    
+    const accuracy = Math.round((state.score / state.attempts) * 100) || 0;
+    const trophyImgs = { 100: '100', 75: '75', 50: '50', 25: '25', 0: '0' };
+    const bracket = Object.keys(trophyImgs).reverse().find(val => accuracy >= val);
+    
+    dom.displayElement.innerHTML = `<img src="assets/icons/icon-trophy${bracket}.png" class="icon-trophy">`;
+    dom.feedbackElement.textContent = `Accuracy: ${accuracy}% | Time: ${formatTime(state.secondsElapsed)}`;
+    dom.feedbackElement.style.color = "var(--text-main)";
+    
+    dom.writeUI.classList.add('hidden');
+    dom.selectUI.classList.add('hidden');
+}
+
+function handleGlobalKeys(event) {
+    if (dom.helpModal.style.display === "flex" && event.key === "Escape") return hideHelp();
+
+    if (!dom.readingScreen.classList.contains('hidden')) {
+        if (event.key === "ArrowRight") nextStory();
+        if (event.key === "ArrowLeft") prevStory();
+        if (event.key === "Escape") showMenu();
+        return;
+    }
+
+    if (dom.gameScreen.classList.contains('hidden')) return;
+    
+    if (event.key === "Enter" && state.interactionMode === 'write') {
+        event.preventDefault();
+        handleWriteAction();
+    }
+
+    if (state.interactionMode === 'select') {
+        if (event.key === "1") handleSelectAction(0);
+        if (event.key === "2") handleSelectAction(1);
+        if (event.key === "3") handleSelectAction(2);
+    }
+}
+
+window.addEventListener('DOMContentLoaded', init);
