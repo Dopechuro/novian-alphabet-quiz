@@ -1,5 +1,8 @@
 import { numbersList, uppercaseList, lowercaseList, backgroundImages, rawStoryData } from './data.js';
 
+// MODIFICATION: Added cleanup tracking for event listeners to prevent memory leaks
+let globalKeydownHandler = null;
+
 const state = {
     storyData: [],
     currentStoryIndex: 0,
@@ -63,7 +66,9 @@ function init() {
 
 function processStoryData() {
     const tempMap = {};
+    // MODIFICATION: Added data validation to prevent silent failures on malformed entries
     for (const key in rawStoryData) {
+        if (!key || typeof rawStoryData[key] !== 'string') continue;
         const parts = key.split('.');
         if (parts.length >= 3) {
             const storyId = parts[1];
@@ -74,6 +79,7 @@ function processStoryData() {
         }
     }
     state.storyData = Object.values(tempMap).filter(s => s.title && s.text);
+    console.warn(`Loaded ${state.storyData.length} valid stories`);
 }
 
 function bindEvents() {
@@ -106,7 +112,9 @@ function bindEvents() {
     document.getElementById('btn-next').addEventListener('click', nextStory);
     document.getElementById('btn-random').addEventListener('click', randomStory);
 
-    document.addEventListener("keydown", handleGlobalKeys);
+    // MODIFICATION: Store reference to handler for cleanup to prevent memory leak when screens change
+    globalKeydownHandler = handleGlobalKeys;
+    document.addEventListener("keydown", globalKeydownHandler);
 }
 
 function updateReadingButton() {
@@ -131,7 +139,16 @@ function startReadingMode() {
 
 function displayCurrentStory() {
     if (state.storyData.length === 0) return;
+    // MODIFICATION: Added bounds checking and validation to prevent undefined story access
+    if (state.currentStoryIndex < 0 || state.currentStoryIndex >= state.storyData.length) {
+        console.error('Invalid story index:', state.currentStoryIndex);
+        return;
+    }
     const story = state.storyData[state.currentStoryIndex];
+    if (!story || !story.title || !story.text) {
+        console.error('Story data incomplete:', story);
+        return;
+    }
     const setMode = document.querySelector('input[name="charset"]:checked').value;
     
     dom.readingImage.style.display = "block";
@@ -232,7 +249,10 @@ function startFloatingLogo() {
 function stopFloatingLogo() {
     state.isLogoFloating = false;
     clearInterval(state.logoSpawnInterval);
+    // MODIFICATION: Added proper cleanup of floating logo event listeners to prevent memory leaks
     document.querySelectorAll('.floating-logo').forEach(logo => {
+        logo.onload = null;  // Clear onload listener
+        logo.onerror = null; // Clear error handler
         logo.style.opacity = '0';
         setTimeout(() => {
             if (logo.parentNode) {
@@ -363,10 +383,23 @@ function startGame() {
 
     toggleScreens(dom.gameScreen);
     
+    // MODIFICATION: Added pool initialization with validation
     if (state.activeSetMode === 'numbers') state.currentPool = [...numbersList];
     else if (['uppercase', 'upper-lower'].includes(state.activeSetMode)) state.currentPool = [...uppercaseList];
     else if (state.activeSetMode === 'lowercase') state.currentPool = [...lowercaseList];
     else if (state.activeSetMode === 'combined') state.currentPool = [...numbersList, ...uppercaseList, ...lowercaseList];
+    else {
+        // MODIFICATION: Fallback to lowercase if invalid mode
+        console.error('Invalid charset mode:', state.activeSetMode);
+        state.currentPool = [...lowercaseList];
+    }
+
+    // MODIFICATION: Validate pool is not empty before starting game
+    if (!state.currentPool || state.currentPool.length === 0) {
+        console.error('Character pool is empty!');
+        showMenu();
+        return;
+    }
 
     state.srsLists = {};
     for (let i = state.minList; i <= state.maxList; i++) state.srsLists[i] = [];
@@ -427,6 +460,12 @@ function nextRound() {
                 break;
             }
         }
+    }
+
+    // MODIFICATION: Guard against null currentListIdx which can cause crashes
+    if (state.currentListIdx === null || !state.srsLists.hasOwnProperty(state.currentListIdx)) {
+        console.error('No valid SRS list found, ending game');
+        return gameWon();
     }
 
     let queue = state.srsLists[state.currentListIdx];

@@ -468,3 +468,25 @@ export const rawStoryData = {
     "DatingCharacterEvent.817.2": "Swept up by the moment, ==DATING_CHARACTER== begins to sing softly.",
     "DatingCharacterEvent.817.3": "You listen in silence. In the boat, surrounded by the darkness, every sound feels amplified. You can hear the waves become her accompaniment, and distant whales seem to join in.\n\nA breeze rises, carrying strands of her hair across your cheek."
 };
+
+// MODIFICATION: Validate character lists after they're defined to catch data corruption early
+const validateCharacterLists = () => {
+    const lists = [
+        { name: 'numbersList', data: numbersList, expected: 10 },
+        { name: 'uppercaseList', data: uppercaseList, expected: 26 },
+        { name: 'lowercaseList', data: lowercaseList, expected: 26 }
+    ];
+    
+    let valid = true;
+    for (const list of lists) {
+        if (!Array.isArray(list.data) || list.data.length !== list.expected) {
+            console.error(`Invalid ${list.name}: expected ${list.expected} items, got ${list.data.length}`);
+            valid = false;
+        }
+    }
+    return valid;
+};
+
+if (!validateCharacterLists()) {
+    console.warn('Character list validation failed');
+}

@@ -9,7 +9,8 @@
 <body>
 
     <div id="main-menu" class="container">
-        <button id="btn-help" class="help-btn" title="How to Learn">
+        <!-- MODIFICATION: Added aria-label for icon-only button accessibility -->
+        <button id="btn-help" class="help-btn" title="How to Learn" aria-label="Open help menu">
             <img src="assets/icons/icon-help.png" alt="Help" style="width: 32px; height: 32px; object-fit: contain;">
         </button>
 
@@ -84,7 +85,8 @@
     </div>
 
     <div id="game-screen" class="container hidden">
-        <button id="btn-focus" class="focus-toggle-btn" title="Toggle Focus Mode">
+        <!-- MODIFICATION: Added aria-label for focus toggle button accessibility -->
+        <button id="btn-focus" class="focus-toggle-btn" title="Toggle Focus Mode" aria-label="Toggle focus mode">
             <img id="focus-icon-img" src="assets/icons/icon-eye-open.png" class="custom-icon" style="margin:0;" alt="">
         </button>
 
@@ -103,7 +105,7 @@
             <button class="option-btn" data-index="2" id="opt-2"></button>
         </div>
 
-        <div id="feedback-text" class="feedback"></div>
+        <div id="feedback-text" class="feedback" aria-live="polite" aria-atomic="true"></div>
         
         <div class="stats-board">
             <span>Remaining: <span id="remaining-count">0</span></span>
@@ -165,7 +167,7 @@
             <h4>Reading Practice</h4>
             <p>Test your fluency by reading full translated story snippets from the game.</p>
 
-            <button id="btn-close-help" class="close-help-btn">
+            <button id="btn-close-help" class="close-help-btn" aria-label="Close help menu">
                 <img src="assets/icons/icon-help2.png" alt="Got it!" style="width: 160px; height: 160px; object-fit: contain;">
             </button>
         </div>

@@ -19,6 +19,18 @@
     --btn-hover: #e2e8f0;
     --error: #f87171;
     --success: #4ade80;
+    /* MODIFICATION: Added spacing and sizing variables for consistency */
+    --spacing-xs: 5px;
+    --spacing-sm: 10px;
+    --spacing-md: 15px;
+    --spacing-lg: 20px;
+    --spacing-xl: 25px;
+    --gap-sm: 10px;
+    --gap-md: 15px;
+    --gap-lg: 20px;
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 16px;
 }
 
 body {
@@ -64,12 +76,19 @@ body {
 
 .container {
     background-color: var(--bg-panel);
+    /* MODIFICATION: Added fallback for browsers that don't support backdrop-filter */
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     padding: 40px;
-    border-radius: 16px;
+    border-radius: var(--border-radius-lg);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     text-align: center;
-    width: 600px;
+    
+    /* Fluid width for mobile */
+    width: 90%;
+    max-width: 600px;
+    box-sizing: border-box;
+    
     position: relative;
     z-index: 10;
     transition: all 0.3s ease;
@@ -115,6 +134,8 @@ body {
     position: fixed;
     inset: 0;
     background: rgba(15, 15, 25, 0.85);
+    /* MODIFICATION: Added fallback for backdrop-filter */
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     z-index: 100;
     display: none;
@@ -126,10 +147,14 @@ body {
 
 .help-content {
     background: rgba(42, 42, 64, 0.95);
-    padding: 30px;
-    border-radius: 16px;
-    width: 80%;
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-lg);
+    
+    /* Fluid width for mobile */
+    width: 90%;
     max-width: 600px;
+    box-sizing: border-box;
+    
     max-height: 80vh;
     overflow-y: auto;
     text-align: left;
@@ -167,21 +192,21 @@ body {
 
 .settings-group {
     background-color: var(--bg-group);
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    margin-bottom: var(--spacing-lg);
     text-align: left;
     transition: all 0.3s ease;
 }
 
 .settings-group h3 {
-    margin: 0 0 12px;
+    margin: 0 0 var(--spacing-md);
     font-size: 14px;
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 1px;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 8px;
+    padding-bottom: var(--spacing-sm);
 }
 
 .radio-label {
@@ -208,34 +233,34 @@ body {
 
 .styled-select {
     width: 100%;
-    padding: 10px;
+    padding: var(--spacing-md);
     background-color: var(--bg-main);
     color: var(--text-muted);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--border-radius-sm);
     font-size: 16px;
     font-weight: bold;
     outline: none;
     cursor: pointer;
-    margin-top: 5px;
+    margin-top: var(--spacing-xs);
 }
 
 .styled-select:focus { border-color: #000; }
 
 .menu-buttons-wrapper {
     display: flex;
-    gap: 15px;
-    margin-top: 10px;
+    gap: var(--gap-md);
+    margin-top: var(--spacing-md);
 }
 
 .action-btn {
-    padding: 15px 20px;
+    padding: var(--spacing-md) var(--spacing-lg);
     font-size: 20px;
     font-weight: bold;
     color: var(--bg-main);
     background-color: var(--text-main);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--border-radius-sm);
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -284,7 +309,11 @@ body {
     box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
 }
 
-#select-ui { display: flex; justify-content: space-between; gap: 20px; }
+#select-ui { 
+    display: flex; 
+    justify-content: space-between; 
+    gap: var(--gap-lg); 
+}
 
 .option-btn {
     flex: 1;
@@ -294,7 +323,7 @@ body {
     color: var(--text-main);
     background-color: #334155;
     border: 2px solid var(--text-main);
-    border-radius: 12px;
+    border-radius: var(--border-radius-md);
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
 }
@@ -321,35 +350,35 @@ body {
 }
 
 .stats-board {
-    margin-top: 25px;
+    margin-top: var(--spacing-xl);
     font-size: 20px;
     color: var(--text-muted);
     display: flex;
     justify-content: space-between;
     background-color: var(--bg-main);
-    padding: 15px 20px;
-    border-radius: 8px;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--border-radius-sm);
     transition: opacity 0.3s ease;
 }
 
 .game-controls {
-    margin-top: 25px;
+    margin-top: var(--spacing-xl);
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: var(--gap-md);
     border-top: 1px solid var(--border-color);
-    padding-top: 20px;
+    padding-top: var(--spacing-lg);
     transition: opacity 0.3s ease;
 }
 
 .control-btn {
-    padding: 10px 20px;
+    padding: var(--spacing-md) var(--spacing-lg);
     font-size: 16px;
     font-weight: bold;
     color: var(--text-main);
     background-color: #64748b;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--border-radius-sm);
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -413,3 +442,68 @@ body {
 
 .nav-wrapper { display: flex; gap: 10px; }
 .hidden { display: none !important; }
+
+/* =========================================
+   Mobile Responsiveness
+========================================= */
+@media (max-width: 600px) {
+    /* Reduce container padding to save screen space */
+    .container { padding: var(--spacing-lg); }
+    .help-content { padding: var(--spacing-lg); }
+
+    /* Scale down typography & icons */
+    .target-character {
+        font-size: 100px;
+        min-height: 120px;
+    }
+    .alien-inline { font-size: 32px; }
+    .last-result-banner { font-size: 24px; min-height: 32px; }
+    .icon-trophy { width: 200px; height: 200px; }
+    .custom-icon { width: 40px; height: 40px; }
+    .radio-label { font-size: 16px; }
+
+    /* MODIFICATION: Keep menu buttons horizontal on mobile as requested */
+    .menu-buttons-wrapper {
+        flex-direction: row;
+        gap: var(--gap-sm);
+    }
+    
+    /* MODIFICATION: Keep select options horizontal on mobile as requested */
+    #select-ui {
+        flex-direction: row;
+        gap: var(--gap-sm);
+    }
+
+    /* Full-width inputs for easier interaction */
+    #write-ui input {
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 30px;
+    }
+    .action-btn { font-size: 18px; padding: var(--spacing-md); }
+    .option-btn { font-size: 28px; padding: 15px 0; }
+
+    /* Adjust game stats panel */
+    .stats-board {
+        flex-direction: column;
+        gap: var(--gap-sm);
+        font-size: 16px;
+    }
+
+    /* Adjust reading screen for smaller viewports */
+    #reading-title { font-size: 32px; }
+    #reading-text { font-size: 20px; padding: var(--spacing-md); }
+    
+    .reading-controls {
+        flex-direction: column;
+        gap: var(--gap-md);
+    }
+    .nav-wrapper {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .nav-wrapper .control-btn {
+        flex: 1;
+        margin: 0 var(--spacing-xs);
+    }
+}
