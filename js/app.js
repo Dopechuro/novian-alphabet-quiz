@@ -62,6 +62,11 @@ function init() {
     updateQuizTypeMenu();
     updateReadingButton();
     startFloatingLogo();
+    
+    // MODIFICATION: Show help modal on first visit
+    if (!localStorage.getItem('hasSeenHelp')) {
+        showHelp();
+    }
 }
 
 function processStoryData() {
@@ -266,6 +271,8 @@ function showHelp() {
 function hideHelp() {
     dom.helpModal.style.opacity = '0';
     setTimeout(() => { dom.helpModal.style.display = 'none'; }, 300);
+    // MODIFICATION: Remember that user has seen help so it doesn't show again
+    localStorage.setItem('hasSeenHelp', 'true');
 }
 
 function spawnFloatingLogo() {
