@@ -326,10 +326,13 @@ body {
     border-radius: var(--border-radius-md);
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
+    outline: none;
 }
 
 .option-btn:hover { background-color: var(--text-main); color: var(--bg-main); }
 .option-btn:active { transform: scale(0.95); }
+/* MODIFICATION: Reset focus state to prevent persistent highlight on mobile after button press */
+.option-btn:focus { background-color: #334155; color: var(--text-main); }
 
 .btn-submit-game { margin-top: 25px; width: auto; padding: 15px 40px; }
 .feedback { margin-top: 20px; font-size: 18px; font-weight: bold; height: 24px; }

@@ -549,6 +549,9 @@ function handleWriteAction() {
 }
 
 function handleSelectAction(btnIndex) {
+    // MODIFICATION: Clear button focus to prevent persistent highlight on mobile
+    document.activeElement.blur();
+    
     const guess = document.getElementById(`opt-${btnIndex}`).textContent;
     const expectedChar = state.currentTargets[0];
     state.attempts++;
