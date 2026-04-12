@@ -137,6 +137,72 @@ function startReadingMode() {
     }
 }
 
+// MODIFICATION: Wrap each word with tooltip spans for font translation on hover/tap
+// Only wraps actual words and numbers, ignoring punctuation
+function createReadingWithTooltips(text) {
+    // Replace only words and numbers, leaving punctuation and whitespace unchanged
+    // \w+ matches word characters (letters, digits) and preserves all symbols around them
+    return text.replace(/(\w+)/g, '<span class="reading-word" data-translation="$1">$1</span>');
+}
+
+// MODIFICATION: Bind hover and tap events to reading words for tooltip interaction
+function bindReadingTooltips() {
+    const words = document.querySelectorAll('.reading-word');
+    let currentTooltip = null;
+
+    words.forEach(word => {
+        // Desktop: hover to show tooltip
+        word.addEventListener('mouseenter', () => {
+            if (currentTooltip) currentTooltip.remove();
+            currentTooltip = showReadingTooltip(word);
+        });
+
+        word.addEventListener('mouseleave', () => {
+            if (currentTooltip) {
+                currentTooltip.remove();
+                currentTooltip = null;
+            }
+        });
+
+        // Mobile: tap to show tooltip
+        word.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentTooltip) {
+                currentTooltip.remove();
+                currentTooltip = null;
+            } else {
+                currentTooltip = showReadingTooltip(word);
+            }
+        });
+    });
+
+    // Mobile: tap outside to close tooltip
+    document.addEventListener('click', () => {
+        if (currentTooltip) {
+            currentTooltip.remove();
+            currentTooltip = null;
+        }
+    });
+}
+
+// MODIFICATION: Create and position tooltip for reading word
+function showReadingTooltip(wordElement) {
+    const tooltip = document.createElement('div');
+    tooltip.className = 'reading-tooltip';
+    tooltip.textContent = wordElement.dataset.translation;
+    // Use regular font for tooltip (not alien font)
+    tooltip.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+    
+    document.body.appendChild(tooltip);
+    
+    // Position tooltip above the word
+    const rect = wordElement.getBoundingClientRect();
+    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+    tooltip.style.top = (rect.top - 10) + 'px';
+    
+    return tooltip;
+}
+
 function displayCurrentStory() {
     if (state.storyData.length === 0) return;
     // MODIFICATION: Added bounds checking and validation to prevent undefined story access
@@ -165,9 +231,13 @@ function displayCurrentStory() {
         displayText = displayText.toLowerCase();
     }
 
-    dom.readingTitle.textContent = displayTitle;
-    dom.readingText.textContent = displayText;
+    // MODIFICATION: Apply tooltips to title as well
+    dom.readingTitle.innerHTML = createReadingWithTooltips(displayTitle);
+    // MODIFICATION: Wrap words with interactive tooltips for font translation
+    dom.readingText.innerHTML = createReadingWithTooltips(displayText);
     dom.readingScreen.scrollTop = 0;
+    // MODIFICATION: Bind tooltip events after HTML is set
+    bindReadingTooltips();
 }
 
 function nextStory() {
