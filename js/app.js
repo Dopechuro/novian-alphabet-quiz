@@ -468,6 +468,9 @@ function nextRound() {
         return gameWon();
     }
 
+    // MODIFICATION: Shuffle the current list to prevent users from memorizing character order
+    shuffleArray(state.srsLists[state.currentListIdx]);
+
     let queue = state.srsLists[state.currentListIdx];
 
     if (state.interactionMode === 'write' && state.quizType === 'combined') {
