@@ -327,10 +327,17 @@ body {
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
     outline: none;
+    /* MODIFICATION: Prevent iOS Safari tap highlight and ghost press */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
 }
 
-.option-btn:hover { background-color: var(--text-main); color: var(--bg-main); }
-.option-btn:active { transform: scale(0.95); }
+/* MODIFICATION: Only apply hover on devices that support true hovering (desktop), not touch devices */
+@media (hover: hover) {
+    .option-btn:hover { background-color: var(--text-main); color: var(--bg-main); }
+}
+
+.option-btn:active { transform: scale(0.95); background-color: #334155; color: var(--text-main); }
 /* MODIFICATION: Reset focus state to prevent persistent highlight on mobile after button press */
 .option-btn:focus { background-color: #334155; color: var(--text-main); }
 

@@ -2,6 +2,8 @@ import { numbersList, uppercaseList, lowercaseList, backgroundImages, rawStoryDa
 
 // MODIFICATION: Added cleanup tracking for event listeners to prevent memory leaks
 let globalKeydownHandler = null;
+// MODIFICATION: Track tooltip to clean up when switching away from reading screen
+let currentReadingTooltip = null;
 
 const state = {
     storyData: [],
@@ -153,41 +155,35 @@ function createReadingWithTooltips(text) {
 // MODIFICATION: Bind hover and tap events to reading words for tooltip interaction
 function bindReadingTooltips() {
     const words = document.querySelectorAll('.reading-word');
-    let currentTooltip = null;
 
-    words.forEach(word => {
-        // Desktop: hover to show tooltip
-        word.addEventListener('mouseenter', () => {
-            if (currentTooltip) currentTooltip.remove();
-            currentTooltip = showReadingTooltip(word);
+    // MODIFICATION: Delay binding to prevent touch propagation from button press
+    setTimeout(() => {
+        words.forEach(word => {
+            // Desktop: hover to show tooltip
+            word.addEventListener('mouseenter', () => {
+                if (currentReadingTooltip) currentReadingTooltip.remove();
+                currentReadingTooltip = showReadingTooltip(word);
+            });
+
+            word.addEventListener('mouseleave', () => {
+                if (currentReadingTooltip) {
+                    currentReadingTooltip.remove();
+                    currentReadingTooltip = null;
+                }
+            });
+
+            // Mobile: tap to show tooltip
+            word.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentReadingTooltip) {
+                    currentReadingTooltip.remove();
+                    currentReadingTooltip = null;
+                } else {
+                    currentReadingTooltip = showReadingTooltip(word);
+                }
+            });
         });
-
-        word.addEventListener('mouseleave', () => {
-            if (currentTooltip) {
-                currentTooltip.remove();
-                currentTooltip = null;
-            }
-        });
-
-        // Mobile: tap to show tooltip
-        word.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (currentTooltip) {
-                currentTooltip.remove();
-                currentTooltip = null;
-            } else {
-                currentTooltip = showReadingTooltip(word);
-            }
-        });
-    });
-
-    // Mobile: tap outside to close tooltip
-    document.addEventListener('click', () => {
-        if (currentTooltip) {
-            currentTooltip.remove();
-            currentTooltip = null;
-        }
-    });
+    }, 150);
 }
 
 // MODIFICATION: Create and position tooltip for reading word
@@ -220,6 +216,13 @@ function displayCurrentStory() {
         console.error('Story data incomplete:', story);
         return;
     }
+    
+    // MODIFICATION: Clear any active tooltip before displaying new story
+    if (currentReadingTooltip) {
+        currentReadingTooltip.remove();
+        currentReadingTooltip = null;
+    }
+    
     const setMode = document.querySelector('input[name="charset"]:checked').value;
     
     dom.readingImage.style.display = "block";
