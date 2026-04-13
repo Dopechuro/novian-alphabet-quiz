@@ -1,4 +1,4 @@
-import { numbersList, uppercaseList, lowercaseList, backgroundImages, rawStoryData } from './data.js';
+import { numbersList, uppercaseList, lowercaseList, backgroundImages } from './data.js';
 
 // MODIFICATION: Added cleanup tracking for event listeners to prevent memory leaks
 let globalKeydownHandler = null;
@@ -58,8 +58,23 @@ const dom = {
     readingContentWrapper: document.getElementById('reading-content-wrapper')
 };
 
-function init() {
-    processStoryData();
+async function init() {
+    try {
+        // MODIFICATION: Show loading state while fetching story data
+        const loadingEl = document.getElementById('loading-message');
+        if (loadingEl) loadingEl.style.display = 'block';
+        
+        await fetchStoryData();
+        
+        if (loadingEl) loadingEl.style.display = 'none';
+    } catch (error) {
+        console.error('Error loading story data:', error);
+        // MODIFICATION: Fallback to empty stories and disable reading practice
+        state.storyData = [];
+        dom.btnReading.disabled = true;
+        dom.btnReading.title = 'Story data unavailable';
+    }
+    
     bindEvents();
     updateQuizTypeMenu();
     updateReadingButton();
@@ -71,7 +86,7 @@ function init() {
     }
 }
 
-function processStoryData() {
+function processStoryData(rawStoryData) {
     const tempMap = {};
     // MODIFICATION: Added data validation to prevent silent failures on malformed entries
     for (const key in rawStoryData) {
@@ -122,6 +137,15 @@ function bindEvents() {
     // MODIFICATION: Store reference to handler for cleanup to prevent memory leak when screens change
     globalKeydownHandler = handleGlobalKeys;
     document.addEventListener("keydown", globalKeydownHandler);
+}
+
+// MODIFICATION: Fetch story data from JSON file
+async function fetchStoryData() {
+    const response = await fetch('assets/story/DatingCharacterEvent.json');
+    if (!response.ok) throw new Error(`Failed to fetch story data: ${response.status}`);
+    
+    const rawStoryData = await response.json();
+    processStoryData(rawStoryData);
 }
 
 function updateReadingButton() {
