@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nova Modern Quiz</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="src/css/styles.css">
 </head>
 <body>
 
     <div id="main-menu" class="container">
         <!-- MODIFICATION: Added aria-label for icon-only button accessibility -->
         <button id="btn-help" class="help-btn" title="How to Learn" aria-label="Open help menu">
-            <img src="assets/icons/icon-help.png" alt="Help" style="width: 32px; height: 32px; object-fit: contain;">
+            <img src="src/assets/icons/icon-help.png" alt="Help" style="width: 32px; height: 32px; object-fit: contain;">
         </button>
 
-        <img src="assets/icons/icon-menu.png" alt="Nova Modern Quiz" class="menu-logo">
+        <img src="src/assets/icons/icon-menu.png" alt="Nova Modern Quiz" class="menu-logo">
         
         <div class="settings-group">
             <h3>Proficiency Level</h3>
@@ -29,11 +29,11 @@
             <h3>Quiz Mode</h3>
             <label class="radio-label">
                 <input type="radio" name="interaction" value="write" checked> 
-                <img src="assets/icons/icon-write.png" class="custom-icon" alt=""> Write
+                <img src="src/assets/icons/icon-write.png" class="custom-icon" alt=""> Write
             </label>
             <label class="radio-label">
                 <input type="radio" name="interaction" value="select"> 
-                <img src="assets/icons/icon-select.png" class="custom-icon" alt=""> Select
+                <img src="src/assets/icons/icon-select.png" class="custom-icon" alt=""> Select
             </label>
         </div>
 
@@ -43,11 +43,11 @@
             <h3>Font Options</h3>
             <label class="radio-label">
                 <input type="radio" name="font-option" value="print" checked> 
-                <img src="assets/icons/icon-print.png" class="custom-icon" alt=""> Print
+                <img src="src/assets/icons/icon-print.png" class="custom-icon" alt=""> Print
             </label>
             <label class="radio-label">
                 <input type="radio" name="font-option" value="cursive"> 
-                <img src="assets/icons/icon-cursive.png" class="custom-icon" alt=""> Cursive
+                <img src="src/assets/icons/icon-cursive.png" class="custom-icon" alt=""> Cursive
             </label>
         </div>
 
@@ -55,23 +55,23 @@
             <h3>Learn/Read</h3>
             <label class="radio-label">
                 <input type="radio" name="charset" value="lowercase" checked> 
-                <img src="assets/icons/icon-lower.png" class="custom-icon" alt=""> Lowercase (a-z)
+                <img src="src/assets/icons/icon-lower.png" class="custom-icon" alt=""> Lowercase (a-z)
             </label>
             <label class="radio-label">
                 <input type="radio" name="charset" value="uppercase"> 
-                <img src="assets/icons/icon-upper.png" class="custom-icon" alt=""> Uppercase (A-Z)
+                <img src="src/assets/icons/icon-upper.png" class="custom-icon" alt=""> Uppercase (A-Z)
             </label>
             <label class="radio-label">
                 <input type="radio" name="charset" value="numbers"> 
-                <img src="assets/icons/icon-numbers.png" class="custom-icon" alt=""> Numbers (0-9)
+                <img src="src/assets/icons/icon-numbers.png" class="custom-icon" alt=""> Numbers (0-9)
             </label>
             <label class="radio-label">
                 <input type="radio" name="charset" value="combined"> 
-                <img src="assets/icons/icon-everything.png" class="custom-icon" alt=""> Everything
+                <img src="src/assets/icons/icon-everything.png" class="custom-icon" alt=""> Everything
             </label>
             <label class="radio-label hidden" id="learn-upper-lower">
                 <input type="radio" name="charset" value="upper-lower"> 
-                <img src="assets/icons/icon-upper-lower.png" class="custom-icon" alt=""> Uppercase to Lowercase
+                <img src="src/assets/icons/icon-upper-lower.png" class="custom-icon" alt=""> Uppercase to Lowercase
             </label>
         </div>
 
@@ -84,7 +84,7 @@
     <div id="game-screen" class="container hidden">
         <!-- MODIFICATION: Added aria-label for focus toggle button accessibility -->
         <button id="btn-focus" class="focus-toggle-btn" title="Toggle Focus Mode" aria-label="Toggle focus mode">
-            <img id="focus-icon-img" src="assets/icons/icon-eye-open.png" class="custom-icon" style="margin:0;" alt="">
+            <img id="focus-icon-img" src="src/assets/icons/icon-eye-open.png" class="custom-icon" style="margin:0;" alt="">
         </button>
 
         <div id="last-result" class="last-result-banner"></div>
@@ -165,11 +165,11 @@
             <p>Test your fluency level by reading story snippets from the game.</p>
 
             <button id="btn-close-help" class="close-help-btn" aria-label="Close help menu">
-                <img src="assets/icons/icon-help2.png" alt="Got it!" style="width: 160px; height: 160px; object-fit: contain;">
+                <img src="src/assets/icons/icon-help2.png" alt="Got it!" style="width: 160px; height: 160px; object-fit: contain;">
             </button>
         </div>
     </div>
 
-    <script type="module" src="js/app.js"></script>
+    <script type="module" src="src/js/app.js"></script>
 </body>
 </html>

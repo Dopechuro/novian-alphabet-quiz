@@ -141,7 +141,7 @@ function bindEvents() {
 
 // MODIFICATION: Fetch story data from JSON file
 async function fetchStoryData() {
-    const response = await fetch('assets/story/DatingCharacterEvent.json');
+    const response = await fetch('src/assets/story/DatingCharacterEvent.json');
     if (!response.ok) throw new Error(`Failed to fetch story data: ${response.status}`);
     
     const rawStoryData = await response.json();
@@ -250,7 +250,7 @@ function displayCurrentStory() {
     const setMode = document.querySelector('input[name="charset"]:checked').value;
     
     dom.readingImage.style.display = "block";
-    dom.readingImage.src = `assets/story/datingeventcg/DatingSPCG_${story.id}.webp`;
+    dom.readingImage.src = `src/assets/story/datingeventcg/DatingSPCG_${story.id}.webp`;
     
     let displayTitle = story.title;
     let displayText = story.text;
@@ -376,11 +376,11 @@ function updateQuizTypeMenu() {
             <h3>Quiz Type</h3>
             <label class="radio-label">
                 <input type="radio" name="quiztype" value="standard" ${!isCombined ? 'checked' : ''}> 
-                <img src="assets/icons/icon-standard.png" class="custom-icon" alt=""> Standard
+                <img src="src/assets/icons/icon-standard.png" class="custom-icon" alt=""> Standard
             </label>
             <label class="radio-label">
                 <input type="radio" name="quiztype" value="combined" ${isCombined ? 'checked' : ''}> 
-                <img src="assets/icons/icon-combined.png" class="custom-icon" alt=""> Combined
+                <img src="src/assets/icons/icon-combined.png" class="custom-icon" alt=""> Combined
             </label>
         `;
         dom.upperLowerLabel.classList.add('hidden');
@@ -393,11 +393,11 @@ function updateQuizTypeMenu() {
             <h3>Quiz Type</h3>
             <label class="radio-label">
                 <input type="radio" name="quiztype" value="standard" ${!isReversed ? 'checked' : ''}> 
-                <img src="assets/icons/icon-standard.png" class="custom-icon" alt=""> Standard
+                <img src="src/assets/icons/icon-standard.png" class="custom-icon" alt=""> Standard
             </label>
             <label class="radio-label">
                 <input type="radio" name="quiztype" value="reversed" ${isReversed ? 'checked' : ''}> 
-                <img src="assets/icons/icon-reversed.png" class="custom-icon" alt=""> Reversed
+                <img src="src/assets/icons/icon-reversed.png" class="custom-icon" alt=""> Reversed
             </label>
         `;
         dom.upperLowerLabel.classList.remove('hidden');
@@ -448,10 +448,10 @@ function toggleFocus() {
 function applyFocusState() {
     if (state.isFocusMode) {
         dom.gameScreen.classList.add('focus-active');
-        dom.focusIconImg.src = "assets/icons/icon-eye-closed.png";
+        dom.focusIconImg.src = "src/assets/icons/icon-eye-closed.png";
     } else {
         dom.gameScreen.classList.remove('focus-active');
-        dom.focusIconImg.src = "assets/icons/icon-eye-open.png";
+        dom.focusIconImg.src = "src/assets/icons/icon-eye-open.png";
     }
 }
 
@@ -704,7 +704,7 @@ function gameWon() {
     const trophyImgs = { 100: '100', 75: '75', 50: '50', 25: '25', 0: '0' };
     const bracket = Object.keys(trophyImgs).reverse().find(val => accuracy >= val);
     
-    dom.displayElement.innerHTML = `<img src="assets/icons/icon-trophy${bracket}.png" class="icon-trophy">`;
+    dom.displayElement.innerHTML = `<img src="src/assets/icons/icon-trophy${bracket}.png" class="icon-trophy">`;
     dom.feedbackElement.textContent = `Accuracy: ${accuracy}% | Time: ${formatTime(state.secondsElapsed)}`;
     dom.feedbackElement.style.color = "var(--text-main)";
     

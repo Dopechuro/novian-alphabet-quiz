@@ -1,7 +1,7 @@
 # Novian Alphabet Quiz
 
 <div align="left">
-  <img src="assets/icons/icon-menu.png" alt="Novian Alphabet Quiz Logo" width="320">
+  <img src="src/assets/icons/icon-menu.png" alt="Novian Alphabet Quiz Logo" width="320">
 </div>
 
 ## **Objective**
